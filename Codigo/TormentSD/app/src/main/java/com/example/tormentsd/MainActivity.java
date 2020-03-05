@@ -17,11 +17,8 @@ public class MainActivity extends AppCompatActivity {
 
         Conexao c = new Conexao();
 
-        TextView txt = findViewById(R.id.txtMinhaString);
+        c.start();
 
-        if(c.conectar())
-            txt.setText("Telefone conectado ao servidor");
-        else
-            txt.setText("Não foi possível conectar ao servidor");
+
     }
 }

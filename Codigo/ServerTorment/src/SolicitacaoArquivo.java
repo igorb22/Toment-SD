@@ -6,17 +6,24 @@ public class SolicitacaoArquivo {
 	private Socket tormentSolicitante;
 	private ArrayList<Socket> tormentsQuePossuemArquivo;
 	private int qtdRespostas;
-	
+	private boolean resultadoEnviado;
 	
 	public SolicitacaoArquivo(String nomeArquivo,Socket tormentSolicitante) {
 		this.nomeArquivo = nomeArquivo;
 		this.tormentSolicitante = tormentSolicitante;
 		this.tormentsQuePossuemArquivo = new ArrayList<Socket>();
 		this.qtdRespostas = 0;
+		this.resultadoEnviado = false;
+	}
+	
+	public boolean isResultadoEnviado() {
+		return resultadoEnviado;
 	}
 
+	public void setResultadoEnviado(boolean resultadoEnviado) {
+		this.resultadoEnviado = resultadoEnviado;
+	}
 
-	
 	public int getQtdRespostas() {
 		return qtdRespostas;
 	}

@@ -25,23 +25,26 @@ public class Server extends Thread{
 	
 	 @Override
 	 public void run() {
-	        super.run();
+	       super.run();
 	        
-	         System.out.println("Aguardando cliente...");
+	       System.out.println("Aguardando cliente...");
 
-	        while(true) {
-		        try {	
-			         Socket connectionSocket = welcomeSocket.accept();
+	        
+	       new VerificaSolicitacoes().start();
+	        
+	       while(true) {
+		       try {	
+			       Socket connectionSocket = welcomeSocket.accept();
 			         
 			         
-			         tormentsConectados.add(new ProcessoExclusivo(connectionSocket));
-			         System.out.println("Cliente Conectado ao servidor");
+			       tormentsConectados.add(new ProcessoExclusivo(connectionSocket));
+			       System.out.println("Cliente Conectado ao servidor");
 			         
 				    		
-		        	Thread.sleep(1000);		    		
-				} catch (InterruptedException | IOException e) {e.printStackTrace();}	
-	        }
-	    }
+		           Thread.sleep(1000);		    		
+			   } catch (InterruptedException | IOException e) {e.printStackTrace();}	
+	       }
+	 }
 	 
 	 public class ProcessoExclusivo extends Thread{
 		 private Socket connection;
@@ -135,17 +138,51 @@ public class Server extends Thread{
 		 
 		 public void verificaSolicitacaoCompleta() {
 			 
-			 for(SolicitacaoArquivo s : solicitacoes) {
+			 for(int i = 0; i < solicitacoes.size();i++) {
 				 
-				 if (s.getQtdRespostas() == tormentsConectados.size()) {
+				 if (solicitacoes.get(i).getQtdRespostas() == tormentsConectados.size() && solicitacoes.get(i).isResultadoEnviado() == false) {
+					 
+					 if(enviaResultadoSolicitacao(solicitacoes.get(i))) {
+				 		solicitacoes.get(i).setResultadoEnviado(true);
+					 }
 					 
 				 }
-			 }
+				 
+			}
+			 
 		 }
 		 
+		 private boolean enviaResultadoSolicitacao(SolicitacaoArquivo s)  {
+			 
+			 String resultado = "resultado";
+			 
+			 if (s.getTormentsQuePossuemArquivo().size() > 0) {
+				 
+				 for (Socket socket : s.getTormentsQuePossuemArquivo())
+					 resultado += ";"+socket.getRemoteSocketAddress().toString(); 
+			
+				 return enviaResultadoSolicitacao(s.getTormentSolicitante(),resultado);
+				 
+			 }else {
+				 
+				 resultado += ";false"; 
+				 return enviaResultadoSolicitacao(s.getTormentSolicitante(),resultado);
+			 
+			 }
+			 
+		 }
 		 
+		 private boolean enviaResultadoSolicitacao(Socket s, String mensagem) {
+			 try {
+				 
+				 DataOutputStream outToClient = new DataOutputStream(s.getOutputStream());
+				 outToClient.writeBytes(mensagem);
+				 return true;
+				
+			} catch (IOException e) {e.printStackTrace();}
+			 
+			 return false;
+		 }
 		 
 	 }
-	 
-	
 }
