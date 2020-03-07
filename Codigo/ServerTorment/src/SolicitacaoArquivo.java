@@ -2,19 +2,21 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class SolicitacaoArquivo {
+	
 	private String nomeArquivo;
-	private Socket tormentSolicitante;
-	private ArrayList<Socket> tormentsQuePossuemArquivo;
-	private int qtdRespostas;
+	private ArrayList<Socket> tormentsSolicitantes;
+	private ArrayList<TormentRespondente> tormentsRespondentes;
 	private boolean resultadoEnviado;
 	
+	
 	public SolicitacaoArquivo(String nomeArquivo,Socket tormentSolicitante) {
+		this.tormentsSolicitantes = new ArrayList<Socket>();
+		this.tormentsRespondentes = new ArrayList<TormentRespondente>();
 		this.nomeArquivo = nomeArquivo;
-		this.tormentSolicitante = tormentSolicitante;
-		this.tormentsQuePossuemArquivo = new ArrayList<Socket>();
-		this.qtdRespostas = 0;
+		this.tormentsSolicitantes.add(tormentSolicitante);
 		this.resultadoEnviado = false;
 	}
+	
 	
 	public boolean isResultadoEnviado() {
 		return resultadoEnviado;
@@ -24,29 +26,9 @@ public class SolicitacaoArquivo {
 		this.resultadoEnviado = resultadoEnviado;
 	}
 
-	public int getQtdRespostas() {
-		return qtdRespostas;
+	public void setTormentsRespondentes(ArrayList<TormentRespondente> tormentsRespondentes) {
+		this.tormentsRespondentes = tormentsRespondentes;
 	}
-	
-	public void incrementQtdRespostas() {
-		this.qtdRespostas++;;
-	}
-	
-	public void decrementQtdRespostas() {
-		this.qtdRespostas--;
-	}
-
-	public void setQtdRespostas(int qtdRespostas) {
-		this.qtdRespostas = qtdRespostas;
-	}
-
-
-
-	public void setTormentsQuePossuemArquivo(ArrayList<Socket> tormentsQuePossuemArquivo) {
-		this.tormentsQuePossuemArquivo = tormentsQuePossuemArquivo;
-	}
-
-
 
 	public String getNomeArquivo() {
 		return nomeArquivo;
@@ -58,29 +40,27 @@ public class SolicitacaoArquivo {
 	}
 
 
-	public Socket getTormentSolicitante() {
-		return tormentSolicitante;
+	public ArrayList<TormentRespondente> getTormentsRespondentes() {
+		return tormentsRespondentes;
+	}
+	
+	public void addTormentRespondente(TormentRespondente tormentRespondente) {
+		this.tormentsRespondentes.add(tormentRespondente);
+	}
+	
+	public void addTormentPesquisador(Socket tormentPesquisador) {
+		this.tormentsSolicitantes.add(tormentPesquisador);
+	}
+	
+	public TormentRespondente getTormentRespondente(int id) {
+		return this.tormentsRespondentes.get(id);
 	}
 
-
-	public void setTormentSolicitante(Socket tormentSolicitante) {
-		this.tormentSolicitante = tormentSolicitante;
+	public ArrayList<Socket> getTormentsSolicitantes() {
+		return tormentsSolicitantes;
 	}
 
-
-	public ArrayList<Socket> getTormentsQuePossuemArquivo() {
-		return tormentsQuePossuemArquivo;
+	public void setTormentsSolicitantes(ArrayList<Socket> tormentsSolicitantes) {
+		this.tormentsSolicitantes = tormentsSolicitantes;
 	}
-	
-	public void addTorment(Socket tormentsQuePossuemArquivo) {
-		this.tormentsQuePossuemArquivo.add(tormentsQuePossuemArquivo);
-	}
-	
-	public Socket getTorment(int id) {
-		return this.tormentsQuePossuemArquivo.get(id);
-	}
-	
-	
-	
-	
 }

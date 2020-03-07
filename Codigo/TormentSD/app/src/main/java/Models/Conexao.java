@@ -1,19 +1,60 @@
 package Models;
-import android.os.AsyncTask;
+
+import android.content.Context;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.Socket;
+
 
 public class Conexao extends Thread {
     private Socket clientSocket;
+    private Comunicacao comunicador;
+    private RecebeMensagem recebeMensagem;
 
-    public Conexao(){}
+    private boolean estaConectado;
+    private boolean enviarMensagem;
+    private boolean estaFechado;
+    private String mensagem;
 
-
+    public Conexao(Context ctx){
+        this.comunicador = (Comunicacao) ctx;
+        this.estaConectado  = false;
+        this.estaFechado = false;
+        this.enviarMensagem = false;
+    }
 
     @Override
     public void run(){
-        conectar();
+         conectar();
+         recebeMensagem = new RecebeMensagem(comunicador,clientSocket);
+         recebeMensagem.start();
+
+         while(true){
+
+                if(estaConectado) {
+                    comunicador.isConnected(clientSocket.isConnected());
+                    this.estaConectado = false;
+                }
+
+                if(estaFechado) {
+                    comunicador.isClosed(clientSocket.isClosed());
+                    this.estaFechado = false;
+                }
+
+                if(enviarMensagem) {
+                    enviarMensagem();
+                    this.enviarMensagem = false;
+                }
+        }
+    }
+
+    public void solicitarStatusConexao(boolean conectado){
+        this.estaConectado = conectado;
+    }
+
+    public void solicitarStatusFechamento(boolean fechado){
+        this.estaFechado = fechado;
     }
 
     public Socket getClientSocket() {
@@ -24,12 +65,19 @@ public class Conexao extends Thread {
         this.clientSocket = clientSocket;
     }
 
+    public void enviarMensagem(boolean enviarMensagem, String mensagem){
+        this.enviarMensagem = enviarMensagem;
+        this.mensagem = mensagem;
+    }
+
     private boolean conectar(){
 
         try {
+
             this.clientSocket = new Socket("192.168.100.28", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
+
         } catch (IOException e) {e.printStackTrace();}
         return false;
     }
@@ -44,4 +92,23 @@ public class Conexao extends Thread {
         return false;
     }
 
+    private void enviarMensagem(){
+        try {
+
+            PrintStream ps = new PrintStream(clientSocket.getOutputStream());
+            ps.println(mensagem);
+
+        } catch (IOException e) {e.printStackTrace();}
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
