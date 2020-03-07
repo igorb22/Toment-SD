@@ -1,0 +1,20 @@
+// torment para servidor - Torment enviando uma pesquisa ao servidor
+pesquisa;item
+
+// torment para servidor - Torment respondendo que possui um arquivo solicitado pelo servidor
+possuiArquivo;item
+
+// torment para servidor - Torment respondendo que não possui um arquivo solicitado pelo servidor
+naoPossuiArquivo;item
+
+// torment para servidor - torment falhou ao se conectar a outro torment(solicitando método do tunel)
+conexao;falhou 
+
+// servidor para torment - requisicao de pesquisa 
+pesquisa;item
+
+// servidor para torment - para busca sem resultados
+resultado;false
+
+// servidor para torment - para busca com resultados
+resultado;ip;ip;ip...
