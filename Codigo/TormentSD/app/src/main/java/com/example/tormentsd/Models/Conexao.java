@@ -1,9 +1,7 @@
 package com.example.tormentsd.Models;
 
 import android.content.Context;
-
 import com.example.tormentsd.Interfaces.Comunicacao;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -51,12 +49,12 @@ public class Conexao extends Thread {
         }
     }
 
-    public void solicitarStatusConexao(boolean conectado){
-        this.estaConectado = conectado;
+    public void solicitarStatusConexao(){
+        this.estaConectado = true;
     }
 
-    public void solicitarStatusFechamento(boolean fechado){
-        this.estaFechado = fechado;
+    public void solicitarStatusFechamento(){
+        this.estaFechado = true;
     }
 
     public Socket getClientSocket() {
@@ -67,13 +65,9 @@ public class Conexao extends Thread {
         this.clientSocket = clientSocket;
     }
 
-    public void enviarMensagem(boolean enviarMensagem, String mensagem){
-        this.enviarMensagem = enviarMensagem;
-        this.mensagem = mensagem;
-    }
+    public void enviarMensagem( String mensagem){this.mensagem = mensagem;}
 
     private boolean conectar(){
-
         try {
 
             this.clientSocket = new Socket("10.50.195.66", 6001);

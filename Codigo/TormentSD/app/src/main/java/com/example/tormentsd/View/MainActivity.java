@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
         textView = findViewById(R.id.texto);
 
         // solicita o status da conexão (se está aberta ou não)
-        conexao.solicitarStatusConexao(true);
+        conexao.solicitarStatusConexao();
 
         Toast.makeText(this, Environment.getExternalStorageDirectory()+"", Toast.LENGTH_SHORT).show();
 
@@ -52,9 +52,8 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
             @Override
             public void onClick(View v) {
                  // enviando uma mensagem ao servidor
-                 conexao.enviarMensagem(true,"pesquisa;"+editTextPesquisa.getText().toString());
+                 conexao.enviarMensagem("pesquisa;"+editTextPesquisa.getText().toString());
                  Toast.makeText(getBaseContext(), "Enviando Mensagem",Toast.LENGTH_LONG).show();
-
             }
         });
     }
@@ -72,6 +71,28 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
 
         if(!folder.exists())
             folder.mkdir();
+    }
+
+    public void pesquisarArquivo(String arquivo){
+
+        if(verificarSeArquivoExiste(arquivo)){
+            conexao.enviarMensagem("possuiArquivo;"+arquivo);
+        }else{
+            conexao.enviarMensagem("naoPossuiArquivo;"+arquivo);
+        }
+    }
+
+    public boolean verificarSeArquivoExiste(String arquivo){
+        File folder = new File(Environment.getExternalStorageDirectory() + "/TORMENT/"+arquivo);
+
+        if(folder.exists()) {
+            Toast.makeText(getBaseContext(), "Arquivo existe",Toast.LENGTH_LONG).show();
+            return true;
+
+        }else {
+            Toast.makeText(getBaseContext(), "arquivo nao existe",Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 
     @Override
@@ -102,6 +123,24 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
     @Override
     public boolean receiveMessage(String mensagem) {
         textView.setText(mensagem);
+
+        String [] mensagens = mensagem.split(";");
+        switch (mensagens[0]){
+
+            case "pesquisa":
+                pesquisarArquivo(mensagens[1]);
+
+
+                break;
+
+            case "resultado":
+
+
+
+
+                break;
+        }
+
 
         return false;
     }
