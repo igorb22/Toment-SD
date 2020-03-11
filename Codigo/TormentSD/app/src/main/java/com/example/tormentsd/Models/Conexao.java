@@ -1,6 +1,8 @@
-package Models;
+package com.example.tormentsd.Models;
 
 import android.content.Context;
+
+import com.example.tormentsd.Interfaces.Comunicacao;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -74,7 +76,7 @@ public class Conexao extends Thread {
 
         try {
 
-            this.clientSocket = new Socket("192.168.100.28", 6001);
+            this.clientSocket = new Socket("10.50.195.66", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
@@ -100,7 +102,6 @@ public class Conexao extends Thread {
 
         } catch (IOException e) {e.printStackTrace();}
     }
-
 }
 
 

@@ -122,7 +122,7 @@ public class Server extends Thread{
 			 
 			 for (int i = 0 ;i < tr.size();i++) {
 				 
-				 enviarPesquisaItem(pesquisa,tr.get(i).getTormentRespondente());
+				 enviarPesquisaItem("pesquisa;"+pesquisa,tr.get(i).getTormentRespondente());
 			 
 			 }	
 		 }
@@ -175,8 +175,8 @@ public class Server extends Thread{
 		 // Cria uma nova solicitacao de arquivo e adiciona os torments conectados no momento a lista de respondentes
 		 private void addNovaSolicitacao(String pesquisa) {
 			 
-			 
 			 int pos = verificaSolicitacaoExistente(pesquisa);
+			 
 			 if (pos == -1) {
 				 solicitacoes.add(new SolicitacaoArquivo(pesquisa,connection));
 				 
@@ -192,7 +192,6 @@ public class Server extends Thread{
 				 	
 				 solicitacoes.get(pos).addTormentPesquisador(connection);
 			 }
-			 
 			 
 		 }
 	 }

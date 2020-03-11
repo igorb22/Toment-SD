@@ -1,4 +1,6 @@
-package Models;
+package com.example.tormentsd.Models;
+
+import com.example.tormentsd.Interfaces.Comunicacao;
 
 import java.io.BufferedReader;
 import java.io.IOException;

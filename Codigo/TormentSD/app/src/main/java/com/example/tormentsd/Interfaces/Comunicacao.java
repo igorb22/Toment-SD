@@ -1,4 +1,4 @@
-package Models;
+package com.example.tormentsd.Interfaces;
 
 public interface Comunicacao{
 
