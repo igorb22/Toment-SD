@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
     private EditText editTextPesquisa;
     private TextView textView;
     private Conexao conexao;
+    int cont = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,11 +87,9 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
         File folder = new File(Environment.getExternalStorageDirectory() + "/TORMENT/"+arquivo);
 
         if(folder.exists()) {
-            Toast.makeText(getBaseContext(), "Arquivo existe",Toast.LENGTH_LONG).show();
             return true;
 
         }else {
-            Toast.makeText(getBaseContext(), "arquivo nao existe",Toast.LENGTH_LONG).show();
             return false;
         }
     }
@@ -122,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
 
     @Override
     public boolean receiveMessage(String mensagem) {
+
         textView.setText(mensagem);
 
         String [] mensagens = mensagem.split(";");

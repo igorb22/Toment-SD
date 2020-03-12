@@ -106,10 +106,12 @@ public class Server extends Thread{
 
 		 private int getSolicitacaoArquivo(String pesquisa) {
 			 int pos = -1;
+			 boolean existe = false;
 			 
-			 for(int i = 0; i < solicitacoes.size();i++)
+			 for(int i = 0; i < solicitacoes.size();i++) {
 				 if (pesquisa.equals(solicitacoes.get(i).getNomeArquivo()) && !solicitacoes.get(i).isResultadoEnviado()) {
-					 pos = i;
+					 	pos = i;
+				 }
 			 }
 			 
 			 return pos;
@@ -189,8 +191,14 @@ public class Server extends Thread{
 				 pesquisar(pesquisa);
 				 
 			 }else {
-				 	
-				 solicitacoes.get(pos).addTormentPesquisador(connection);
+				 
+				 boolean existe = false;
+				 for(int i = 0; i < solicitacoes.get(pos).getTormentsSolicitantes().size(); i++)
+					 if(solicitacoes.get(pos).getTormentsSolicitantes().get(i).equals(connection))
+						 existe = true;
+				 
+				 if(!existe)
+					 solicitacoes.get(pos).addTormentPesquisador(connection);
 			 }
 			 
 		 }
@@ -217,8 +225,9 @@ public class Server extends Thread{
 		 public void verificaSolicitacaoCompleta() {
 			 
 			 SolicitacaoArquivo s = null;
-			 
 			 for(int i = 0; i < solicitacoes.size();i++) {
+				 
+				 System.out.println("Iteração do laco :" +i);
 				 
 				 s = solicitacoes.get(i);
 				 
@@ -235,7 +244,8 @@ public class Server extends Thread{
 					 }
 					 
 					 if(todosResponderam) {
-						 if(enviaResultadoSolicitacao(solicitacoes.get(i)));
+						 //if(enviaResultadoSolicitacao(solicitacoes.get(i)));
+						 	enviaResultadoSolicitacao(solicitacoes.get(i));
 				 			solicitacoes.get(i).setResultadoEnviado(true);
 					 } 
 				 }
@@ -272,7 +282,10 @@ public class Server extends Thread{
 
 				 boolean resultadoEnviado = true;
 
-				 for (Socket solicitante: s.getTormentsSolicitantes())
+				 ArrayList<Socket> ts = s.getTormentsSolicitantes();
+				 System.out.println(ts.size());
+
+				 for (Socket solicitante: ts)
 					 resultadoEnviado = enviaResultadoSolicitacao(solicitante,resultado);
 				 
 				 return resultadoEnviado;
@@ -283,7 +296,8 @@ public class Server extends Thread{
 		 
 		 private boolean enviaResultadoSolicitacao(Socket s, String mensagem) {
 			 try {
-				 
+
+				 System.out.println(mensagem);
 				 PrintStream ps = new PrintStream(s.getOutputStream());
 		         ps.println(mensagem);
 				 return true;

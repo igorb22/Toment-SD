@@ -65,12 +65,12 @@ public class Conexao extends Thread {
         this.clientSocket = clientSocket;
     }
 
-    public void enviarMensagem( String mensagem){this.mensagem = mensagem;}
+    public void enviarMensagem( String mensagem){this.enviarMensagem = true; this.mensagem = mensagem;}
 
     private boolean conectar(){
         try {
 
-            this.clientSocket = new Socket("10.50.195.66", 6001);
+            this.clientSocket = new Socket("192.168.100.28", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
