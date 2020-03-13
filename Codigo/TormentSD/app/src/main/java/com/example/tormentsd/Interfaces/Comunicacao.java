@@ -2,8 +2,8 @@ package com.example.tormentsd.Interfaces;
 
 public interface Comunicacao{
 
-    boolean isConnected(boolean status);
-    boolean isClosed(boolean status);
-    boolean receiveMessage(String mensagem);
+    void isConnected(boolean status);
+    void isClosed(boolean status);
+    void receiveMessage(String mensagem);
 
 }

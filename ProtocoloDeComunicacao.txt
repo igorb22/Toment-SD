@@ -10,6 +10,9 @@ naoPossuiArquivo;item
 // torment para servidor - torment falhou ao se conectar a outro torment(solicitando método do tunel)
 conexao;falhou 
 
+// torment para servidor - dispositivos "online"
+dispositivosConectados:dispositivos
+
 // servidor para torment - requisicao de pesquisa 
 pesquisa;item
 
@@ -18,3 +21,6 @@ resultado;false
 
 // servidor para torment - para busca com resultados
 resultado;ip;ip;ip...
+
+// servidor para torment - dispositivos "online"
+dispositivosConectados:ip;ip;ip;ip

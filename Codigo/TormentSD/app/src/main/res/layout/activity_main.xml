@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_gravity="center"
     tools:context=".View.MainActivity">
 
+
+
+
+
+
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardPesquisa"
         android:layout_marginTop="5pt"
         android:layout_marginStart="5pt"
         android:layout_marginEnd="5pt"
@@ -43,10 +49,63 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:visibility="gone"
+        android:layout_marginStart="10pt"
+        android:layout_marginEnd="10pt"
+        android:layout_marginBottom="10pt"
+        android:layout_marginTop="10pt"
+        android:id="@+id/cardListaElementos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="10pt"
+        android:layout_gravity="center"
+        app:cardCornerRadius="5pt">
+
+        <LinearLayout
+            android:layout_marginTop="5pt"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_weight="2"
+                    android:textAlignment="center"
+                    android:layout_gravity="center"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="10pt"
+                    android:text="Dispositivos Online"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <ImageButton
+                    android:id="@+id/btnFechar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#003A2424"
+                    android:src="@drawable/ic_fechar" />
+            </LinearLayout>
+
+
+            <ListView
+                android:padding="5pt"
+                android:id="@+id/listDevices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/texto"/>
 
 
-</LinearLayout>
+</FrameLayout>
