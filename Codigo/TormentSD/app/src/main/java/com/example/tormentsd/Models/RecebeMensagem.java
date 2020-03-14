@@ -1,6 +1,9 @@
 package com.example.tormentsd.Models;
 
+import android.widget.Toast;
+
 import com.example.tormentsd.Interfaces.Comunicacao;
+import com.example.tormentsd.View.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,8 +26,8 @@ public class RecebeMensagem extends Thread {
             try {
 
                 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String mensagem = inFromClient.readLine();
-                comunicacador.receiveMessage(mensagem);
+
+                comunicacador.receiveMessage(inFromClient.readLine());
 
             } catch (IOException e) {e.printStackTrace();}
         }

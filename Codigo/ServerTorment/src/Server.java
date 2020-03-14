@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -75,23 +77,31 @@ public class Server extends Thread{
 				String pesquisa = inFromClient.readLine();
 			    System.out.println("mensagem recebida: "+pesquisa);
 
+			    if(pesquisa != null) {
 				
-				String[] mensagem = pesquisa.split(";");
-				
-				switch(mensagem[0]) {
-					case "pesquisa":
-							addNovaSolicitacao(mensagem[1]);
-							break;
-					case "possuiArquivo":
-							addRespostaTormentRespondente(mensagem[1],true,true);
-							break;
-					case "naoPossuiArquivo": 
-							addRespostaTormentRespondente(mensagem[1],false,true);
-							break;
-					case "conexao": 
-							break;
-				
-				}
+					String[] mensagem = pesquisa.split(";");
+					
+					switch(mensagem[0]) {
+					
+						case "pesquisa":
+								addNovaSolicitacao(mensagem[1]);
+								break;
+						case "possuiArquivo":
+								addRespostaTormentRespondente(mensagem[1],true,true);
+								break;
+						case "naoPossuiArquivo": 
+								addRespostaTormentRespondente(mensagem[1],false,true);
+								break;
+						
+						case "dispositivosConectados":
+								enviaDispositivosConectados();
+								break;
+						
+						case "conexao": 
+								break;
+					
+					}
+			    }
 					
 			} catch (IOException e) {e.printStackTrace();}
 		 }
@@ -117,6 +127,22 @@ public class Server extends Thread{
 			 return pos;
 		 }
 		 
+		 private void enviaDispositivosConectados() {
+			 String mensagem = "dispositivosConectados";
+			 System.out.println("Enviando solicitacao");
+
+			 if (tormentsConectados.size() > 1) {
+				 for (ProcessoExclusivo p: tormentsConectados) {
+					 if (!p.getConnection().equals(connection))
+						 mensagem += ";"+p.getConnection().getRemoteSocketAddress();
+				 }
+			 } else
+				 mensagem += ";false";
+			 
+			 System.out.println("enviando..."+mensagem);
+			 enviarMensagem(mensagem);
+		 }
+		 
 		 // envia a pesquisa para os torments adicionados a lista de respondentes
 		 private void pesquisar(String pesquisa) {
 			 
@@ -129,11 +155,14 @@ public class Server extends Thread{
 			 }	
 		 }
 		 
-		 private void enviarPesquisaItem(String pesquisa) {
+		 private void enviarMensagem(String pesquisa) {
 			 try {
-				 				
-				PrintStream ps = new PrintStream(connection.getOutputStream());
-	            ps.println(pesquisa);
+				 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+                 bw.write(pesquisa);
+                 bw.newLine();
+                 bw.flush();
+				/*PrintStream ps = new PrintStream(connection.getOutputStream());
+	            ps.println(pesquisa);*/
 				
 			} catch (IOException e) {e.printStackTrace();}
 		 }
@@ -141,8 +170,13 @@ public class Server extends Thread{
 		 private void enviarPesquisaItem(String pesquisa, Socket s) {
 			 try {
 				 				
-				PrintStream ps = new PrintStream(s.getOutputStream());
-	            ps.println(pesquisa);
+				 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+                 bw.write(pesquisa);
+                 bw.newLine();
+                 bw.flush();
+                 
+				/*PrintStream ps = new PrintStream(s.getOutputStream());
+	            ps.println(pesquisa);*/
 				
 			} catch (IOException e) {e.printStackTrace();}
 		 }
@@ -185,7 +219,10 @@ public class Server extends Thread{
 				 pos = getSolicitacaoArquivo(pesquisa);
 				 
 				 for (ProcessoExclusivo p : tormentsConectados) {
-					 addTormentRespondente(pos,p.getConnection(), false,false);
+				
+					 if (!(p.getConnection().equals(connection)))
+						 addTormentRespondente(pos,p.getConnection(), false,false);
+				 
 				 }
 				 
 				 pesquisar(pesquisa);
@@ -225,9 +262,10 @@ public class Server extends Thread{
 		 public void verificaSolicitacaoCompleta() {
 			 
 			 SolicitacaoArquivo s = null;
+			 System.out.println("Solicitacoes :" + solicitacoes.size());
+
 			 for(int i = 0; i < solicitacoes.size();i++) {
 				 
-				 System.out.println("Iteração do laco :" +i);
 				 
 				 s = solicitacoes.get(i);
 				 
@@ -236,11 +274,8 @@ public class Server extends Thread{
 					 boolean todosResponderam = true;
 					 
 					 for (int pos = 0;pos < s.getTormentsRespondentes().size();pos++) {
-						 
-						 if (!s.getTormentsRespondentes().get(pos).isRespondeuRequisicao()) {
-							 todosResponderam = false;
-						 }
-						 
+						 if (!s.getTormentsRespondentes().get(pos).isRespondeuRequisicao())
+							 todosResponderam = false; 
 					 }
 					 
 					 if(todosResponderam) {
@@ -270,26 +305,25 @@ public class Server extends Thread{
 			
 				 // rever isso aqui
 				 boolean resultadoEnviado = true;
-				 
+				 				 
 				 for (Socket solicitante: s.getTormentsSolicitantes())
 					 resultadoEnviado = enviaResultadoSolicitacao(solicitante,resultado);
 				 
 				 return resultadoEnviado;
 				 
-			 }else {
+			 } else {
 				 
 				 resultado += ";false"; 
 
 				 boolean resultadoEnviado = true;
 
-				 ArrayList<Socket> ts = s.getTormentsSolicitantes();
-				 System.out.println(ts.size());
 
-				 for (Socket solicitante: ts)
+				 System.out.println(resultado+" - torments solicitantes: "+s.getTormentsSolicitantes());
+				 				 
+				 for (Socket solicitante: s.getTormentsSolicitantes())
 					 resultadoEnviado = enviaResultadoSolicitacao(solicitante,resultado);
 				 
 				 return resultadoEnviado;
-			 
 			 }
 			 
 		 }
@@ -312,8 +346,8 @@ public class Server extends Thread{
 	 public class VerificaDispositivosConectados extends Thread {
 		 
 		 
-		 public void run() {
-			try {
+		@SuppressWarnings("deprecation")
+		public void run() {
 				
 				while(true) {
 				
@@ -321,15 +355,13 @@ public class Server extends Thread{
 						
 						if ((p.getConnection() == null || p.getConnection().isClosed())) {
 							tormentsConectados.remove(p);
+							p.stop();
 						}
 						
 					}
 					
-
-					Thread.sleep(2000);
 				}
 				
-			} catch (InterruptedException e) {e.printStackTrace();} 
 		 }
 	 }
 }

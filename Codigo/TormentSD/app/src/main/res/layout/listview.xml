@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:padding="2pt"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+            <ImageView
+                android:src="@drawable/ic_trovao"
+                android:layout_width="20pt"
+                android:layout_height="20pt"/>
+
+            <TextView
+                android:layout_gravity="center"
+                android:id="@+id/txtIpElemento"
+                android:text="Ola Mundo Ola Mundo"
+                android:layout_marginStart="10pt"
+                android:layout_weight="2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/txtOperacao"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:elevation="10pt"
+            android:text="VER ARQUIVOS"
+            android:textColor="@color/colorPrimaryDark" />
+
+    </LinearLayout>
+
+</FrameLayout>

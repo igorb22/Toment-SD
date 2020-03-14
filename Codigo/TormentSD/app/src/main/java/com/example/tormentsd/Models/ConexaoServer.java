@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 
-
-public class Conexao extends Thread {
+public class ConexaoServer extends Thread {
     private Socket clientSocket;
     private Comunicacao comunicador;
     private RecebeMensagem recebeMensagem;
@@ -15,13 +14,15 @@ public class Conexao extends Thread {
     private boolean estaConectado;
     private boolean enviarMensagem;
     private boolean estaFechado;
+    private boolean desconectar;
     private String mensagem;
 
-    public Conexao(Context ctx){
+    public ConexaoServer(Context ctx){
         this.comunicador = (Comunicacao) ctx;
         this.estaConectado  = false;
         this.estaFechado = false;
         this.enviarMensagem = false;
+        this.desconectar = false;
     }
 
     @Override
@@ -45,6 +46,11 @@ public class Conexao extends Thread {
                 if(enviarMensagem) {
                     enviarMensagem();
                     this.enviarMensagem = false;
+                }
+
+                if (desconectar){
+                    desconectar();
+                    this.desconectar = false;
                 }
         }
     }
@@ -70,12 +76,17 @@ public class Conexao extends Thread {
     private boolean conectar(){
         try {
 
-            this.clientSocket = new Socket("192.168.100.28", 6001);
+            this.clientSocket = new Socket("192.168.1.110", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
         } catch (IOException e) {e.printStackTrace();}
         return false;
+    }
+
+    public void desconectarTorment(){
+        this.desconectar = true;
+
     }
 
     private boolean desconectar(){

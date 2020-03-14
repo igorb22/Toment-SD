@@ -24,3 +24,6 @@ resultado;ip;ip;ip...
 
 // servidor para torment - dispositivos "online"
 dispositivosConectados:ip;ip;ip;ip
+
+// servidor para torment - dispositivos "online"
+dispositivosConectados:false

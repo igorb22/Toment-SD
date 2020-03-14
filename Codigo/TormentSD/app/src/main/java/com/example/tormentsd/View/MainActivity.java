@@ -3,11 +3,8 @@ package com.example.tormentsd.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,8 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -25,26 +22,34 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.tormentsd.Interfaces.Comunicacao;
-import com.example.tormentsd.Models.Conexao;
+import com.example.tormentsd.Models.ConexaoServer;
 import com.example.tormentsd.Models.Dispositivo;
 import com.example.tormentsd.Models.DispositivoAdapter;
 import com.example.tormentsd.R;
-
 import java.io.File;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements Comunicacao {
-    private ImageButton btnPesquisar;
+import static android.view.View.GONE;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,Comunicacao {
     private EditText editTextPesquisa;
     private TextView textView;
-    private Conexao conexao;
+    private ConexaoServer conexao;
     private CardView layoutLista;
     private ListView listaElementos;
     private CardView layoutPesquisa;
-    private ImageButton btnFecharLista;
+    private ProgressDialog dialog;
+    private ImageButton btnPesquisar;
+    private ImageButton btnFechar;
+    private TextView txtMensagem;
+    private TextView txtTitulo;
+    private String pesquisa;
+    private boolean realizouPesquisa = false;
+    private ArrayList<Dispositivo> dispositivos;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.dispositivos_conectados, menu);
 
@@ -57,78 +62,109 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
         switch (id) {
             case R.id.action_back:
 
-                //comunicador.layoutIsClosed(true);
-                layoutPesquisa.setVisibility(View.GONE);
-                layoutLista.setVisibility(View.VISIBLE);
+                conexao.enviarMensagem("dispositivosConectados;dispositivos");
+                Toast.makeText(getBaseContext(), "Enviando Mensagem",Toast.LENGTH_LONG).show();
 
-
-
-                ArrayList<Dispositivo> elementos = new ArrayList<>();
-
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-                elementos.add(new Dispositivo("192.168.9.2.1"));
-
-                ArrayAdapter adapter = new DispositivoAdapter(this, elementos);
-                listaElementos.setAdapter(adapter);
-
+                novoAlertDialog();
 
                 return true;
         }
 
         return false;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         // Pede permissão ao usuário
         checaPermissao();
 
         // faz a conexão com o servidor
-        conexao = new Conexao(MainActivity.this);
+        conexao = new ConexaoServer(MainActivity.this);
         conexao.start();
 
         // linka os componentes da tela com o back-end
-        btnPesquisar = findViewById(R.id.btnPesquisar);
         editTextPesquisa = findViewById(R.id.editTextPesquisa);
         textView = findViewById(R.id.texto);
         listaElementos = findViewById(R.id.listDevices);
         layoutLista = findViewById(R.id.cardListaElementos);
         layoutPesquisa = findViewById(R.id.cardPesquisa);
-        btnFecharLista = findViewById(R.id.btnFechar);
+        btnPesquisar = findViewById(R.id.btnPesquisar);
+        btnFechar = findViewById(R.id.btnFechar);
+        txtTitulo = findViewById(R.id.txtTitulo);
+        txtMensagem = findViewById(R.id.txtMensagem);
 
-        // solicita o status da conexão (se está aberta ou não)
-        conexao.solicitarStatusConexao();
 
-        Toast.makeText(this, Environment.getExternalStorageDirectory()+"", Toast.LENGTH_SHORT).show();
-
-        btnPesquisar.setOnClickListener(new View.OnClickListener() {
+        listaElementos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View v) {
-                 // enviando uma mensagem ao servidor
-                 conexao.enviarMensagem("pesquisa;"+editTextPesquisa.getText().toString());
-                 Toast.makeText(getBaseContext(), "Enviando Mensagem",Toast.LENGTH_LONG).show();
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(realizouPesquisa){
+
+                    dispositivos.get(position).getIp();
+
+                } else{
+
+
+                }
             }
         });
 
-        btnFecharLista.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                layoutPesquisa.setVisibility(View.VISIBLE);
-                layoutLista.setVisibility(View.GONE);
-            }
-        });
+        btnPesquisar.setOnClickListener(this);
+        btnFechar.setOnClickListener(this);
+    }
+
+    public void mostraCardComResultados(String[] mensagens, String titulo,String operacao){
+
+        txtTitulo.setText(titulo);
+        txtMensagem.setVisibility(View.GONE);
+
+        cancelaAlertDialog();
+
+        dispositivos = criaListaDeDispostivos(mensagens);
+
+        ArrayAdapter adapter = new DispositivoAdapter(this,dispositivos,operacao);
+        listaElementos.setAdapter(adapter);
+
+        mostraLayoutLista();
+    }
+
+    public void mostraCardSemResultados(String titulo, String mensagem){
+
+        txtTitulo.setText(titulo);
+        txtMensagem.setText(mensagem);
+        txtMensagem.setVisibility(View.VISIBLE);
+
+        cancelaAlertDialog();
+
+        listaElementos.setAdapter(null);
+        mostraLayoutLista();
+    }
+
+
+    public void mostraLayoutLista(){
+        layoutPesquisa.setVisibility(GONE);
+        layoutLista.setVisibility(View.VISIBLE);
+    }
+
+    public void escondeLayoutLista(){
+        layoutPesquisa.setVisibility(View.VISIBLE);
+        layoutLista.setVisibility(GONE);
+    }
+
+    public void novoAlertDialog(){
+        dialog = new ProgressDialog(MainActivity.this);
+        dialog.setMessage("Aguarde um momento...");
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    public void cancelaAlertDialog(){
+        if (dialog.isShowing())
+            dialog.cancel();
+
+        dialog = null;
     }
 
     public void checaPermissao(){
@@ -151,16 +187,45 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
         if(verificarSeArquivoExiste(arquivo))
             conexao.enviarMensagem("possuiArquivo;"+arquivo);
         else
-            conexao.enviarMensagem("naoPossuiArquivo;"+arquivo);
+            conexao.enviarMensagem("naoPossuiArquivolalalalal;"+arquivo);
     }
 
-    public boolean verificarSeArquivoExiste(String arquivo){
+    private boolean verificarSeArquivoExiste(String arquivo){
         File folder = new File(Environment.getExternalStorageDirectory() + "/TORMENT/"+arquivo);
 
         if(folder.exists())
             return true;
         else
             return false;
+    }
+
+    private ArrayList<Dispositivo> criaListaDeDispostivos(String [] ips){
+
+        ArrayList<Dispositivo> d = new ArrayList<>();
+        for (int i = 1; i < ips.length;i++)
+            d.add(new Dispositivo(ips[i]));
+
+        return d;
+    }
+
+    private String[] corrigiStringResposta(String[] mensagens){
+
+        if (mensagens.length == 3 && mensagens[2].equals("false")) {
+
+            String[] m = new String[mensagens.length-1];
+            int i = 0;
+
+            for (String item : mensagens) {
+                if (!item.equals("falseresultado")) {
+                    m[i] = item;
+                    i++;
+                }
+            }
+
+            return m;
+        }else{
+            return mensagens;
+        }
     }
 
     @Override
@@ -187,25 +252,98 @@ public class MainActivity extends AppCompatActivity implements Comunicacao {
     }
 
     @Override
-    public void receiveMessage(String mensagem) {
+    public void receiveMessage(final String mensagem) {
 
-        textView.setText(mensagem);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-        String [] mensagens = mensagem.split(";");
-        switch (mensagens[0]){
+                Toast.makeText(getBaseContext(), "mensagem: "+mensagem,
+                        Toast.LENGTH_LONG).show();
 
-            case "pesquisa":
-                pesquisarArquivo(mensagens[1]);
+            }
+        });
 
-                break;
+        if (mensagem != null) {
 
-            case "resultado":
+            final String[] mensagens = mensagem.split(";");
+            switch (mensagens[0]) {
 
-                break;
+                case "pesquisa":
+                    pesquisarArquivo(mensagens[1]);
 
-            case "dispositivosConectados":
+                    break;
 
-                  break;
+                case "resultado":
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Toast.makeText(getBaseContext(), "tem original "+mensagens[1]+
+                                    "\nitem: "+
+                                    corrigiStringResposta(mensagens)[1],Toast.LENGTH_LONG).show();
+                            if (corrigiStringResposta(mensagens)[1].equals("false"))
+                                mostraCardSemResultados("Pesquisa: "+pesquisa,
+                                        "Sua Pesquisa não obteve resultados!");
+                            else
+                                mostraCardComResultados(mensagens,"Pesquisa: "+pesquisa,"DOWNLOAD");
+                        }
+                    });
+
+                    break;
+
+                case "dispositivosConectados":
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mensagens[1].equals("false"))
+                                mostraCardSemResultados("Dispositivos ONLINE",
+                                        "Nenhum dispositivo além de você \nestá conectado");
+                            else
+                                mostraCardComResultados(mensagens,"Dispositivos ONLINE","VER ARQUIVOS");
+                        }
+                    });
+                    break;
+            }
         }
     }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btnFechar:
+
+                    if (realizouPesquisa)
+                        realizouPesquisa = false;
+
+                    escondeLayoutLista();
+                break;
+
+            case R.id.btnPesquisar:
+
+                    realizouPesquisa = true;
+
+                    novoAlertDialog();
+
+                    pesquisa = editTextPesquisa.getText().toString();
+
+                    // enviando uma mensagem ao servidor
+                    conexao.enviarMensagem("pesquisa;"+pesquisa);
+                    Toast.makeText(getBaseContext(), "Enviando Mensagem",
+                                    Toast.LENGTH_LONG).show();
+
+                break;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        conexao.desconectarTorment();
+    }
+
+
 }
