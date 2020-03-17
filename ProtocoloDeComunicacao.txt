@@ -23,7 +23,25 @@ resultado;false
 resultado;ip;ip;ip...
 
 // servidor para torment - dispositivos "online"
-dispositivosConectados:ip;ip;ip;ip
+dispositivosConectados;ip;ip;ip;ip
 
 // servidor para torment - dispositivos "online"
-dispositivosConectados:false
+dispositivosConectados;false
+
+// torment para torment - requisicao de arquivo
+requisica;"arquivo"
+
+// torment para torment - requisicao de arquivos disponíveis para download
+todosArquivos;true
+
+// torment para torment - requisicao de arquivos disponíveis para download
+arquivosSolicitados;arquivo1;arquivo2...
+
+
+// torment para torment - caso não exista nenhum arquivo
+arquivosSolicitados;false
+
+// torment para torment - mensagem indicando que o arquivo sera enviado em seguida
+prepararRecepcao;true
+
+

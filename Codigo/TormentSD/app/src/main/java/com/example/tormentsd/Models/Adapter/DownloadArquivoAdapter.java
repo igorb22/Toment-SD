@@ -1,4 +1,4 @@
-package com.example.tormentsd.Models;
+package com.example.tormentsd.Models.Adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,18 +7,19 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.example.tormentsd.Models.Dispositivo;
 import com.example.tormentsd.R;
 
 import java.util.ArrayList;
 
-public class DispositivoAdapter extends ArrayAdapter<Dispositivo> {
+public class DownloadArquivoAdapter extends ArrayAdapter<Dispositivo> {
 
     private final Context context;
     private final ArrayList<Dispositivo> elementos;
     private final String operacao;
 
-    public DispositivoAdapter(Context ctx,ArrayList<Dispositivo> dispositivos,String operacao){
-        super(ctx, R.layout.listview,dispositivos);
+    public DownloadArquivoAdapter(Context ctx, ArrayList<Dispositivo> dispositivos, String operacao){
+        super(ctx, R.layout.listview_requisicoes,dispositivos);
         this.context = ctx;
         this.elementos = dispositivos;
         this.operacao = operacao;
@@ -30,7 +31,7 @@ public class DispositivoAdapter extends ArrayAdapter<Dispositivo> {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        View rowView = inflater.inflate(R.layout.listview, parent, false);
+        View rowView = inflater.inflate(R.layout.listview_requisicoes, parent, false);
 
         TextView dispositivo =  rowView.findViewById(R.id.txtIpElemento);
         TextView txtOperacao = rowView.findViewById(R.id.txtOperacao);

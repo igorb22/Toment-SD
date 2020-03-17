@@ -1,14 +1,17 @@
-package com.example.tormentsd.Models;
+package com.example.tormentsd.Models.Conexao;
 
 import android.content.Context;
-import com.example.tormentsd.Interfaces.Comunicacao;
+import com.example.tormentsd.Interfaces.Comunicador;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 
 public class ConexaoServer extends Thread {
     private Socket clientSocket;
-    private Comunicacao comunicador;
+    private Comunicador comunicador;
     private RecebeMensagem recebeMensagem;
 
     private boolean estaConectado;
@@ -18,7 +21,7 @@ public class ConexaoServer extends Thread {
     private String mensagem;
 
     public ConexaoServer(Context ctx){
-        this.comunicador = (Comunicacao) ctx;
+        this.comunicador = (Comunicador) ctx;
         this.estaConectado  = false;
         this.estaFechado = false;
         this.enviarMensagem = false;
@@ -71,12 +74,12 @@ public class ConexaoServer extends Thread {
         this.clientSocket = clientSocket;
     }
 
-    public void enviarMensagem( String mensagem){this.enviarMensagem = true; this.mensagem = mensagem;}
+    public void enviarMensagem(String mensagem){this.enviarMensagem = true; this.mensagem = mensagem;}
 
     private boolean conectar(){
         try {
 
-            this.clientSocket = new Socket("192.168.1.110", 6001);
+            this.clientSocket = new Socket("192.168.100.28", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
@@ -106,6 +109,31 @@ public class ConexaoServer extends Thread {
             ps.println(mensagem);
 
         } catch (IOException e) {e.printStackTrace();}
+    }
+
+    public class RecebeMensagem extends Thread {
+        private Comunicador comunicacador;
+        private Socket socket;
+
+        public  RecebeMensagem(Comunicador c, Socket s){
+            this.comunicacador = c;
+            this.socket = s;
+        }
+
+        @Override
+        public void run(){
+
+            while(true){
+                try {
+
+                    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+
+                    comunicacador.receiveMessage(inFromClient.readLine());
+
+                } catch (IOException e) {e.printStackTrace();}
+            }
+        }
     }
 }
 
