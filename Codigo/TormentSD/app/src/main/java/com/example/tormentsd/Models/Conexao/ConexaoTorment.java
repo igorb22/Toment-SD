@@ -7,10 +7,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.tormentsd.Interfaces.Comunicador;
+import com.example.tormentsd.Models.DownloadArquivo;
 import com.example.tormentsd.View.MainActivity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,12 +25,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 
+import static com.example.tormentsd.Models.Downloads.downloads;
+
 public class ConexaoTorment extends Thread {
     private String ip;
     private Socket socket;
     private String requisicao;
     private Comunicador comunicacao;
-    private static final int filesize = 6000000;
 
     public ConexaoTorment(String ip, Socket s, Context context) {
         this.ip = ip;
@@ -78,7 +82,8 @@ public class ConexaoTorment extends Thread {
                         break;
 
                     case "prepararRecepcao":
-                        recebeArquivo();
+                        Log.i("prepara recepcao", mensagem[0]);
+                        recebeArquivo(Integer.parseInt(mensagem[1]));
                         break;
 
                 }
@@ -109,7 +114,34 @@ public class ConexaoTorment extends Thread {
         if (myFile != null) {
             try {
 
-                enviaMensagem("prepararRecepcao;true");
+
+                byte[] mybytearray = new byte[(int) myFile.length()];
+
+                Log.i("enviando mensagem de preparacao", "mensagem");
+                enviaMensagem("prepararRecepcao;"+mybytearray.length);
+
+                Thread.sleep(1000);
+
+                Log.i("adicionando arquivo", "mensagem");
+                FileInputStream fis = new FileInputStream(myFile);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+
+
+                Log.i("lendo bytes", "mensagem");
+                DataInputStream dis = new DataInputStream(bis);
+                dis.readFully(mybytearray, 0, mybytearray.length);
+
+
+                OutputStream os = socket.getOutputStream();
+
+                Log.i("enviando bytes", "mensagem");
+                DataOutputStream dos = new DataOutputStream(os);
+                //dos.writeLong(mybytearray.length);
+                dos.write(mybytearray, 0, mybytearray.length);
+                dos.flush();
+
+
+                /*enviaMensagem("prepararRecepcao;true");
 
                 byte[] mybytearray = new byte[(int) myFile.length()];
 
@@ -125,14 +157,12 @@ public class ConexaoTorment extends Thread {
 
                 os.write(mybytearray, 0, mybytearray.length);
 
-                os.flush();
+                os.flush();*/
 
 
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (FileNotFoundException e) {e.printStackTrace();
+            } catch (IOException e) {e.printStackTrace();
+            } catch (InterruptedException e) { e.printStackTrace();}
         }
     }
 
@@ -148,16 +178,67 @@ public class ConexaoTorment extends Thread {
         }
     }
 
-    public void recebeArquivo() {
-        int bytesRead;
-        int current = 0;
+    public void recebeArquivo(int size) {
+        Log.i("inserindo novo download","mensagem");
 
-        byte[] mybytearray = new byte[filesize];
+        try {
+            Log.i("no download","mensagem");
+
+            int percent;
+            int bytesRead;
+
+            Log.i("caminho completo 1","mensagem");
+            DataInputStream clientData = new DataInputStream(
+                    socket.getInputStream());
+
+            String caminhoCompleto = Environment.getExternalStorageDirectory().getPath()
+                    + "/TORMENT/"+ requisicao.split(";")[1];
+
+            Log.i("caminho completo 2","mensagem");
+            OutputStream output = new FileOutputStream(new File(caminhoCompleto));
+
+            percent = (int) size/100;
+            byte[] buffer = new byte[1024];
+
+
+            Log.i("caminho completo",caminhoCompleto);
+
+            downloads.add(new DownloadArquivo(caminhoCompleto,0,"BAIXANDO"));
+            int pos = downloads.size()-1;
+
+            Log.i("informando novo download","mensagem");
+            comunicacao.informUpdates(true);
+
+
+            while (size > 0 && (bytesRead = clientData.read(buffer, 0,
+                    Math.min(buffer.length, size))) != -1) {
+                output.write(buffer, 0, bytesRead);
+                size -= bytesRead;
+
+                Log.i("no laco","mensagem");
+                atualizaDownload(pos,bytesRead/percent);
+
+            }
+
+            atualizaStatus(pos,"FINALIZADO");
+
+            output.close();
+            //socket.close();
+
+        } catch (IOException e) {
+            Log.i("erro no download",e.getMessage());
+        }
+
+
+        /*int bytesRead;
+        int current;
+
+        byte[] mybytearray = new byte[size];
 
         try {
             InputStream is = socket.getInputStream();
             File fileExt = new File(Environment.getExternalStorageDirectory().getPath() + "/TORMENT/"
-                    , "arquivo.txt");
+                    ,requisicao.split(";")[1]);
 
             fileExt.getParentFile().mkdirs();
 
@@ -166,26 +247,70 @@ public class ConexaoTorment extends Thread {
             bytesRead = is.read(mybytearray, 0, mybytearray.length);
             current = bytesRead;
 
-            do {
 
+            String path = Environment.getExternalStorageDirectory().getPath()
+                    + "/TORMENT/"+ requisicao.split(";")[1];
+            int percent =  size/100;
+
+            downloads.add(new DownloadArquivo(path,0,"BAIXANDO"));
+            int pos = downloads.size()-1;
+            comunicacao.informUpdates(true);
+
+            do {
                 bytesRead = is.read(mybytearray, current, (mybytearray.length - current));
                 if (bytesRead >= 0)
                     current += bytesRead;
 
+
+                Log.i("no laco","mensagem");
+                atualizaDownload(pos,bytesRead/percent);
             } while (bytesRead > -1);
 
             fos.write(mybytearray, 0, mybytearray.length);
             fos.close();
-            socket.close();
+
+            atualizaStatus(pos,"FINALIZADO");
+
+            //socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+    }
+
+
+    public void atualizaDownload(int pos, int current){
+
+        int down = downloads.get(pos).getDownload() + current;
+        downloads.get(pos).setDownload(down);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                comunicacao.informUpdates(true);
+            }
+        }).start();
+
+    }
+
+    public void atualizaStatus(int pos, String status){
+
+        downloads.get(pos).setStatus(status);
+
+        if (status.equals("FINALIZADO"))
+            downloads.get(pos).setDownload(100);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                comunicacao.informUpdates(true);
+            }
+        }).start();
     }
 
     public void enviaMensagem(String mensagem) {
         try {
-
+            requisicao = mensagem;
             PrintStream ps = new PrintStream(socket.getOutputStream());
             ps.println(mensagem);
             Log.i("enviou mensagem", "mensagem");

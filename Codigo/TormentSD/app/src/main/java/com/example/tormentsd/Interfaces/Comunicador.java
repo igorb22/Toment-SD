@@ -6,5 +6,6 @@ public interface Comunicador {
     void isClosed(boolean status);
     void receiveMessage(String mensagem);
     void getArchivesRequested(String[] archives);
+    void informUpdates(boolean update);
 
 }

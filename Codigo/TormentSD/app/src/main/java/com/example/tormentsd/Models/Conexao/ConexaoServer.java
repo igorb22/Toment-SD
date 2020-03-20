@@ -79,7 +79,7 @@ public class ConexaoServer extends Thread {
     private boolean conectar(){
         try {
 
-            this.clientSocket = new Socket("192.168.100.28", 6001);
+            this.clientSocket = new Socket("192.168.137.1", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
@@ -127,7 +127,6 @@ public class ConexaoServer extends Thread {
                 try {
 
                     BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
 
                     comunicacador.receiveMessage(inFromClient.readLine());
 

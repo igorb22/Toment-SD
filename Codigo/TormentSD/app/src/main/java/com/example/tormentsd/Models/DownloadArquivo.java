@@ -1,11 +1,14 @@
 package com.example.tormentsd.Models;
 
-public class Download {
+
+public class DownloadArquivo {
     private String path;
     private int download;
     private String status; // { COMPLETO, CANCELADO}
 
-    public Download(String path, int download, String status) {
+    public DownloadArquivo(){}
+
+    public DownloadArquivo(String path, int download, String status) {
         this.path = path;
         this.download = download;
         this.status = status;

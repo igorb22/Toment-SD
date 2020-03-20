@@ -5,24 +5,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.tormentsd.Models.Dispositivo;
+import com.example.tormentsd.Models.DownloadArquivo;
 import com.example.tormentsd.R;
 
 import java.util.ArrayList;
 
-public class DownloadArquivoAdapter extends ArrayAdapter<Dispositivo> {
+
+public class DownloadArquivoAdapter extends ArrayAdapter<DownloadArquivo> {
 
     private final Context context;
-    private final ArrayList<Dispositivo> elementos;
-    private final String operacao;
+    private final ArrayList<DownloadArquivo> elementos;
 
-    public DownloadArquivoAdapter(Context ctx, ArrayList<Dispositivo> dispositivos, String operacao){
-        super(ctx, R.layout.listview_requisicoes,dispositivos);
+    public DownloadArquivoAdapter(Context ctx, ArrayList<DownloadArquivo> elementos){
+        super(ctx, R.layout.listview_arquivos_baixados,elementos);
+
         this.context = ctx;
-        this.elementos = dispositivos;
-        this.operacao = operacao;
+        this.elementos = elementos;
     }
 
     @Override
@@ -31,14 +32,16 @@ public class DownloadArquivoAdapter extends ArrayAdapter<Dispositivo> {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        View rowView = inflater.inflate(R.layout.listview_requisicoes, parent, false);
+        View rowView = inflater.inflate(R.layout.listview_arquivos_baixados, parent, false);
 
-        TextView dispositivo =  rowView.findViewById(R.id.txtIpElemento);
-        TextView txtOperacao = rowView.findViewById(R.id.txtOperacao);
+        TextView path =  rowView.findViewById(R.id.txtPathArquivo);
+        TextView status = rowView.findViewById(R.id.txtStatus);
+        ProgressBar progrees = rowView.findViewById(R.id.progressDownload);
 
 
-        dispositivo.setText(elementos.get(position).getIp());
-        txtOperacao.setText(operacao);
+        path.setText(elementos.get(position).getPath());
+        status.setText(elementos.get(position).getStatus());
+        progrees.setProgress(elementos.get(position).getDownload());
 
         return rowView;
     }
