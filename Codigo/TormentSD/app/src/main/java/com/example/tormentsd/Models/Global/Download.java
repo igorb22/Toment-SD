@@ -1,16 +1,16 @@
-package com.example.tormentsd.Models;
+package com.example.tormentsd.Models.Global;
 
 import com.example.tormentsd.Models.DownloadArquivo;
 
 import java.util.ArrayList;
 
-public class Downloads {
+public class Download {
     public static ArrayList<DownloadArquivo> downloads;
 
-    public Downloads(ArrayList<DownloadArquivo> downloads) {
+    public Download(ArrayList<DownloadArquivo> downloads) {
         this.downloads = downloads;
     }
-    public Downloads( ) {
+    public Download( ) {
         this.downloads = new ArrayList<>();
     }
 

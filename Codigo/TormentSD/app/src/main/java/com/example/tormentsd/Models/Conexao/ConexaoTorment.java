@@ -4,11 +4,9 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.tormentsd.Interfaces.Comunicador;
 import com.example.tormentsd.Models.DownloadArquivo;
-import com.example.tormentsd.View.MainActivity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -19,13 +17,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 
-import static com.example.tormentsd.Models.Downloads.downloads;
+import static com.example.tormentsd.Models.Global.Download.downloads;
 
 public class ConexaoTorment extends Thread {
     private String ip;
@@ -51,7 +48,6 @@ public class ConexaoTorment extends Thread {
         this.comunicacao = (Comunicador) context;
     }
 
-
     @Override
     public void run() {
         try {
@@ -61,37 +57,75 @@ public class ConexaoTorment extends Thread {
                 enviaMensagem(requisicao);
             }
 
-            while (true) {
-                BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String[] mensagem = inFromClient.readLine().split(";");
+            while (socket.isConnected()) {
+                    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    String mens = inFromClient.readLine();
 
-                switch (mensagem[0]) {
-                    case "requisicao":
 
-                        enviaArquivo(mensagem);
-                        break;
+                    if (mens != null) {
+                        String[] mensagem = mens.split(";");
 
-                    case "todosArquivos":
+                        switch (mensagem[0]) {
+                            case "requisicao":
 
-                        enviaMensagem(pegaListaDeArquivos());
-                        break;
+                                enviaArquivo(mensagem);
+                                break;
 
-                    case "arquivosSolicitados":
-                        Log.i("arquivos da solicitacao", "mensagem");
-                        comunicacao.getArchivesRequested(mensagem);
-                        break;
+                            case "todosArquivos":
 
-                    case "prepararRecepcao":
-                        Log.i("prepara recepcao", mensagem[0]);
-                        recebeArquivo(Integer.parseInt(mensagem[1]));
-                        break;
+                                enviaMensagem(pegaListaDeArquivos());
+                                break;
 
+                            case "arquivosSolicitados":
+                                Log.i("arquivos da solicitacao", "mensagem");
+                                comunicacao.getArchivesRequested(mensagem);
+                                break;
+
+                            case "prepararRecepcao":
+                                Log.i("prepara recepcao", mensagem[0]);
+                                recebeArquivo(Integer.parseInt(mensagem[1]));
+                                break;
+
+                        }
+                    }
                 }
-            }
         } catch (IOException e) {e.printStackTrace();}
     }
 
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public String getRequisicao() {
+        return requisicao;
+    }
+
+    public void setRequisicao(String requisicao) {
+        this.requisicao = requisicao;
+    }
+
+    public Comunicador getComunicacao() {
+        return comunicacao;
+    }
+
+    public void setComunicacao(Comunicador comunicacao) {
+        this.comunicacao = comunicacao;
+    }
+
     public String pegaListaDeArquivos() {
+
         String path = "arquivosSolicitados";
         File f = new File(Environment.getExternalStorageDirectory().getPath() + "/TORMENT/");
         File[] files = f.listFiles();
@@ -136,30 +170,10 @@ public class ConexaoTorment extends Thread {
 
                 Log.i("enviando bytes", "mensagem");
                 DataOutputStream dos = new DataOutputStream(os);
-                //dos.writeLong(mybytearray.length);
                 dos.write(mybytearray, 0, mybytearray.length);
                 dos.flush();
 
-
-                /*enviaMensagem("prepararRecepcao;true");
-
-                byte[] mybytearray = new byte[(int) myFile.length()];
-
-                FileInputStream fis = new FileInputStream(myFile);
-
-                BufferedInputStream bis = new BufferedInputStream(fis);
-
-                bis.read(mybytearray, 0, mybytearray.length);
-
-                OutputStream os = socket.getOutputStream();
-
-                System.out.println("Enviando...");
-
-                os.write(mybytearray, 0, mybytearray.length);
-
-                os.flush();*/
-
-
+                socket.close();
             } catch (FileNotFoundException e) {e.printStackTrace();
             } catch (IOException e) {e.printStackTrace();
             } catch (InterruptedException e) { e.printStackTrace();}
@@ -172,8 +186,8 @@ public class ConexaoTorment extends Thread {
             socket = new Socket(ip, 7001);
             Log.i("conectando a dispositivo", "mensagem");
 
-
         } catch (IOException e) {
+            socket = new Socket();
             e.printStackTrace();
         }
     }
@@ -197,7 +211,7 @@ public class ConexaoTorment extends Thread {
             Log.i("caminho completo 2","mensagem");
             OutputStream output = new FileOutputStream(new File(caminhoCompleto));
 
-            percent = (int) size/100;
+            percent = size/100;
             byte[] buffer = new byte[1024];
 
 
@@ -223,59 +237,11 @@ public class ConexaoTorment extends Thread {
             atualizaStatus(pos,"FINALIZADO");
 
             output.close();
-            //socket.close();
+            socket.close();
 
         } catch (IOException e) {
             Log.i("erro no download",e.getMessage());
         }
-
-
-        /*int bytesRead;
-        int current;
-
-        byte[] mybytearray = new byte[size];
-
-        try {
-            InputStream is = socket.getInputStream();
-            File fileExt = new File(Environment.getExternalStorageDirectory().getPath() + "/TORMENT/"
-                    ,requisicao.split(";")[1]);
-
-            fileExt.getParentFile().mkdirs();
-
-            FileOutputStream fos = new FileOutputStream(fileExt);
-
-            bytesRead = is.read(mybytearray, 0, mybytearray.length);
-            current = bytesRead;
-
-
-            String path = Environment.getExternalStorageDirectory().getPath()
-                    + "/TORMENT/"+ requisicao.split(";")[1];
-            int percent =  size/100;
-
-            downloads.add(new DownloadArquivo(path,0,"BAIXANDO"));
-            int pos = downloads.size()-1;
-            comunicacao.informUpdates(true);
-
-            do {
-                bytesRead = is.read(mybytearray, current, (mybytearray.length - current));
-                if (bytesRead >= 0)
-                    current += bytesRead;
-
-
-                Log.i("no laco","mensagem");
-                atualizaDownload(pos,bytesRead/percent);
-            } while (bytesRead > -1);
-
-            fos.write(mybytearray, 0, mybytearray.length);
-            fos.close();
-
-            atualizaStatus(pos,"FINALIZADO");
-
-            //socket.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
 

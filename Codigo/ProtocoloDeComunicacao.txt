@@ -1,11 +1,11 @@
 // torment para servidor - Torment enviando uma pesquisa ao servidor
-pesquisa;item
+pesquisa;"item"
 
 // torment para servidor - Torment respondendo que possui um arquivo solicitado pelo servidor
-possuiArquivo;item
+possuiArquivo;"item"
 
 // torment para servidor - Torment respondendo que não possui um arquivo solicitado pelo servidor
-naoPossuiArquivo;item
+naoPossuiArquivo;"item"
 
 // torment para servidor - torment falhou ao se conectar a outro torment(solicitando método do tunel)
 conexao;falhou 
@@ -14,16 +14,16 @@ conexao;falhou
 dispositivosConectados:dispositivos
 
 // servidor para torment - requisicao de pesquisa 
-pesquisa;item
+pesquisa;"item"
 
 // servidor para torment - para busca sem resultados
 resultado;false
 
 // servidor para torment - para busca com resultados
-resultado;ip;ip;ip...
+resultado;"ip;ip;ip"
 
 // servidor para torment - dispositivos "online"
-dispositivosConectados;ip;ip;ip;ip
+dispositivosConectados;"ip;ip;ip;ip"
 
 // servidor para torment - dispositivos "online"
 dispositivosConectados;false
@@ -42,6 +42,6 @@ arquivosSolicitados;arquivo1;arquivo2...
 arquivosSolicitados;false
 
 // torment para torment - mensagem indicando que o arquivo sera enviado em seguida
-prepararRecepcao;true
+prepararRecepcao;"length"
 
 

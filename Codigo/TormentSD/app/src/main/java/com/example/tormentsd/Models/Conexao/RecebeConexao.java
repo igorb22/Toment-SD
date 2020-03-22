@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.example.tormentsd.Models.Global.Conexao.conexoes;
+
 public class RecebeConexao extends Thread {
     private ServerSocket server;
     private Context ctx;
@@ -31,6 +33,7 @@ public class RecebeConexao extends Thread {
                 Log.i("received response from server", "mensagem");
 
                 ConexaoTorment ct = new ConexaoTorment(s,ctx);
+                conexoes.add(ct);
                 ct.start();
 
             }

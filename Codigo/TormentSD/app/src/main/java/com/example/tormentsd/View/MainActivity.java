@@ -6,7 +6,9 @@ import androidx.cardview.widget.CardView;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,13 +34,17 @@ import com.example.tormentsd.Models.Dispositivo;
 import com.example.tormentsd.Models.Adapter.DispositivoAdapter;
 import com.example.tormentsd.Models.Adapter.PathAdapter;
 import com.example.tormentsd.Models.DownloadArquivo;
-import com.example.tormentsd.Models.Downloads;
+import com.example.tormentsd.Models.Global.Conexao;
+import com.example.tormentsd.Models.Global.Download;
 import com.example.tormentsd.Models.PathArquivo;
 import com.example.tormentsd.R;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import static com.example.tormentsd.Models.Downloads.downloads;
+
+import static com.example.tormentsd.Models.Global.Conexao.conexoes;
+import static com.example.tormentsd.Models.Global.Download.downloads;
 
 
 import static android.view.View.GONE;
@@ -67,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.dispositivos_conectados, menu);
 
@@ -98,8 +103,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicia Downloads
-        Downloads d = new Downloads();
+        // Inicia a classe Conexao que possui um atributo estático
+        new Conexao();
+
+        // Inicia a classe Download que possui um atributo estático
+        new Download();
+
+        // Adiciona o caminho de todos os arquivos ao atributo estático da classe Download
+        pegaTodosOsArquivos();
 
         // Pede permissão ao usuário
         checaPermissao();
@@ -108,11 +119,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         conexaoServer = new ConexaoServer(MainActivity.this);
         conexaoServer.start();
 
-        // Permite que o torment receba conexao de outros torments
+        // Permite que o torment receba conexões de outros torments
         recebeConexao = new RecebeConexao(MainActivity.this);
         recebeConexao.start();
 
-        // linka os componentes da tela com o back-end
+        // linka os componentes da tela com o backend
         editTextPesquisa = findViewById(R.id.editTextPesquisa);
         listaElementos = findViewById(R.id.listDevices);
         layoutLista = findViewById(R.id.cardListaElementos);
@@ -124,10 +135,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         listviewDeDownloads = findViewById(R.id.listDispositivosBaixados);
         txtDownload = findViewById(R.id.txtTituloDownload);
 
-        atualizaListaDeDownloads();
+        atualizaListaDeArquivos();
 
-        Toast.makeText(getBaseContext(), Environment.getDataDirectory() + " - " +
-                Environment.getRootDirectory(), Toast.LENGTH_LONG).show();
+
+        listviewDeDownloads.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                abrePasta();
+            }
+        });
 
         listaElementos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -139,8 +155,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String ip = dispositivos.get(position).getIp()
                             .replace("/", "").split(":")[0];
 
-                    ConexaoTorment conexaoTorment = new ConexaoTorment(ip, "requisicao;" + pesquisa, MainActivity.this);
-                    conexaoTorment.start();
+                    ConexaoTorment c = new ConexaoTorment(ip, "requisicao;" + pesquisa, MainActivity.this);
+                    conexoes.add(c);
+                    c.start();
 
                     Toast.makeText(getBaseContext(), "INICIANDO DOWNLOAD",
                             Toast.LENGTH_LONG).show();
@@ -148,21 +165,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     escondeLayoutLista();
 
                 } else if (solicitouDispositivosOnLine) {
-
                     String ip = dispositivos.get(position).getIp()
                             .replace("/", "").split(":")[0];
 
                     novoAlertDialog();
 
-                    ConexaoTorment conexaoTorment = new ConexaoTorment(ip, "todosArquivos;arquivo", MainActivity.this);
-                    conexaoTorment.start();
+                    ConexaoTorment c = new ConexaoTorment(ip, "todosArquivos;arquivo", MainActivity.this);
+                    conexoes.add(c);
+                    c.start();
 
-                    path = new PathArquivo(conexaoTorment);
+                    path = new PathArquivo(c);
 
                 } else if (solicitouArquivosDeDispositvo) {
 
                     final String[] arquivo = path.getPaths().get(position).split("/");
-
 
                     new Thread(new Runnable() {
                         @Override
@@ -179,10 +195,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             });
                         }
                     }).start();
-
                 }
-
-                //Toast.makeText(getBaseContext()," --- "+ip,Toast.LENGTH_LONG).show();
             }
         });
 
@@ -190,31 +203,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnFechar.setOnClickListener(this);
     }
 
-    public void atualizaListaDeDownloads() {
+    public void abrePasta() {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath()
+                + "/TORMENT/");
+        intent.setDataAndType(uri, "text/csv");
+        startActivity(Intent.createChooser(intent, "Abrindo pasta"));
+    }
 
-                    Toast.makeText(getBaseContext(), "Atualizando lista de downloads",
-                            Toast.LENGTH_LONG).show();
+    public void pegaTodosOsArquivos() {
+
+        File f = new File(Environment.getExternalStorageDirectory().getPath() + "/TORMENT/");
+        File[] files = f.listFiles();
+
+        if (files.length > 0) {
+
+            for (int i = 0; i < files.length; i++)
+                downloads.add(new DownloadArquivo(files[i].getPath(), 100, "FINALIZADO"));
+        }
+    }
 
 
-                    if (downloads.size() > 0) {
+    public void atualizaListaDeArquivos() {
 
-                        txtDownload.setText("Últimos TORMENTS");
-                        DownloadArquivoAdapter adt =
-                                new DownloadArquivoAdapter(MainActivity.this, downloads);
-                        listviewDeDownloads.setAdapter(adt);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getBaseContext(), "Atualizando lista de downloads",
+                        Toast.LENGTH_LONG).show();
+
+                if (downloads.size() > 0) {
+
+                    txtDownload.setText("Seus Arquivos");
+                    DownloadArquivoAdapter adt =
+                            new DownloadArquivoAdapter(MainActivity.this,
+                                    arquivosOrdemReversa());
+                    listviewDeDownloads.setAdapter(adt);
+
+                } else
+                    txtDownload.setText("Nenhum arquivo baixado recentimente");
+            }
+        });
+    }
+
+    public ArrayList<DownloadArquivo> arquivosOrdemReversa() {
+
+        ArrayList<DownloadArquivo> arquivosReverso = new ArrayList<>();
+
+        for (int i = downloads.size() - 1; i >= 0; i--)
+            arquivosReverso.add(downloads.get(i));
 
 
-                    } else {
-                        txtDownload.setText("Nenhum arquivo baixado recentimente");
-                    }
-
-                }
-            });
-
+        return arquivosReverso;
     }
 
     public void mostraCardComResultados(String[] mensagens, String titulo, String operacao) {
@@ -264,6 +305,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void escondeLayoutLista() {
+        realizouPesquisa = false;
+        solicitouDispositivosOnLine = false;
+        solicitouArquivosDeDispositvo = false;
+
         layoutPrincipal.setVisibility(View.VISIBLE);
         layoutLista.setVisibility(GONE);
     }
@@ -455,25 +500,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void informUpdates(boolean update) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-               Toast.makeText(getBaseContext(),"Atualizando os downloads - blablabla",Toast.LENGTH_LONG).show();
-            }
-        });
-            atualizaListaDeDownloads();
+        atualizaListaDeArquivos();
     }
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
             case R.id.btnFechar:
-
-                realizouPesquisa = false;
-                solicitouDispositivosOnLine = false;
-                solicitouArquivosDeDispositvo = false;
-
                 escondeLayoutLista();
                 break;
 
@@ -485,21 +519,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 pesquisa = editTextPesquisa.getText().toString();
 
-                // enviando uma mensagem ao servidor
-                conexaoServer.enviarMensagem("pesquisa;" + pesquisa);
-                Toast.makeText(getBaseContext(), "Enviando Mensagem",
-                        Toast.LENGTH_LONG).show();
+                if (!pesquisa.equals("")) {
+                    // enviando uma mensagem ao servidor
+                    conexaoServer.enviarMensagem("pesquisa;" + pesquisa);
+
+                    Toast.makeText(getBaseContext(), "Enviando Mensagem",
+                            Toast.LENGTH_LONG).show();
+                }else
+                    mostraCardSemResultados("Escreva ma mensagem válida","");
 
                 break;
         }
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
 
+        try {
 
+            for (ConexaoTorment c : conexoes)
+                c.getSocket().close();
+
+        } catch (IOException e) {e.printStackTrace();}
     }
-
-
 }
