@@ -545,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onDestroy(){
         System.out.println("Bye");
-        conexaoServer.enviarMensagem("desconectar");
+        conexaoServer.enviarMensagem("desconectar;true");
 
         try {
 

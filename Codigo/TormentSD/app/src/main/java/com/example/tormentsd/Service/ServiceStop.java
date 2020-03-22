@@ -38,7 +38,7 @@ public class ServiceStop extends Service {
 
     public void desconectarConexao(){
         System.out.println("Bye");
-        conexaoServer.enviarMensagem("desconectar");
+        conexaoServer.enviarMensagem("desconectar;true");
 
         try {
 
