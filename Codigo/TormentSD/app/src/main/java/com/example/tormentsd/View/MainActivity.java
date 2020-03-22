@@ -506,12 +506,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Override
+ /*   @Override
     public  void onBackPressed(){
         System.out.println("Bye");
         conexaoServer.enviarMensagem("desconectar");
         super.onBackPressed();
-    }
+    } */
 
 
 }
