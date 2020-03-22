@@ -1,5 +1,6 @@
 package com.example.tormentsd.Models.Conexao;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
 import android.os.Handler;
@@ -107,6 +108,7 @@ public class ConexaoTorment extends Thread {
         return path;
     }
 
+    @SuppressLint("LongLogTag")
     public void enviaArquivo(String[] mensagem) {
 
         File myFile = verificarSeArquivoExiste(mensagem[1]);
@@ -166,6 +168,7 @@ public class ConexaoTorment extends Thread {
         }
     }
 
+    @SuppressLint("LongLogTag")
     public void conectar() {
         try {
 
@@ -178,6 +181,7 @@ public class ConexaoTorment extends Thread {
         }
     }
 
+    @SuppressLint("LongLogTag")
     public void recebeArquivo(int size) {
         Log.i("inserindo novo download","mensagem");
 

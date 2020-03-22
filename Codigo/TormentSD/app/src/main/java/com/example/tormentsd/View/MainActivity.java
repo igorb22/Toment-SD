@@ -7,6 +7,7 @@ import androidx.cardview.widget.CardView;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -126,8 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         atualizaListaDeDownloads();
 
-        Toast.makeText(getBaseContext(), Environment.getDataDirectory() + " - " +
-                Environment.getRootDirectory(), Toast.LENGTH_LONG).show();
+     //  Toast.makeText(getBaseContext(), Environment.getDataDirectory() + " - " +
+      //          Environment.getRootDirectory(), Toast.LENGTH_LONG).show();
 
         listaElementos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -496,9 +497,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onDestroy(){
+        System.out.println("Bye");
+        conexaoServer.enviarMensagem("desconectar");
+       //conexaoServer.desconectarTorment();
+        //recebeConexao.desconectarParaReceberConexao();
         super.onDestroy();
 
 
+    }
+
+    @Override
+    public  void onBackPressed(){
+        System.out.println("Bye");
+        conexaoServer.enviarMensagem("desconectar");
+        super.onBackPressed();
     }
 
 

@@ -79,7 +79,7 @@ public class ConexaoServer extends Thread {
     private boolean conectar(){
         try {
 
-            this.clientSocket = new Socket("192.168.137.1", 6001);
+            this.clientSocket = new Socket("192.168.0.110", 6001);
 
             return this.clientSocket.isConnected() ? true:false;
 
@@ -88,6 +88,7 @@ public class ConexaoServer extends Thread {
     }
 
     public void desconectarTorment(){
+        desconectar();
         this.desconectar = true;
 
     }
@@ -95,7 +96,8 @@ public class ConexaoServer extends Thread {
     private boolean desconectar(){
         try {
             this.clientSocket.close();
-
+         //   this.recebeMensagem.stop();
+         //   this.stop();
             return this.clientSocket.isClosed();
         } catch (IOException e) {e.printStackTrace();}
 
