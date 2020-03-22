@@ -110,6 +110,7 @@ public class Server extends Thread{
 						
 						case "desconectar":
 							tormentsConectados.remove(this);
+							this.stop();
 							break;
 					
 					}

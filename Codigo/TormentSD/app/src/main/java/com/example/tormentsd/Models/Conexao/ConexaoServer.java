@@ -26,6 +26,7 @@ public class ConexaoServer extends Thread {
         this.estaFechado = false;
         this.enviarMensagem = false;
         this.desconectar = false;
+        clientSocket = new Socket();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ConexaoServer extends Thread {
          recebeMensagem = new RecebeMensagem(comunicador,clientSocket);
          recebeMensagem.start();
 
-         while(true){
+         while(clientSocket.isConnected()){
 
                 if(estaConectado) {
                     comunicador.isConnected(clientSocket.isConnected());
@@ -84,6 +85,7 @@ public class ConexaoServer extends Thread {
             return this.clientSocket.isConnected() ? true:false;
 
         } catch (IOException e) {e.printStackTrace();}
+
         return false;
     }
 
@@ -125,7 +127,7 @@ public class ConexaoServer extends Thread {
         @Override
         public void run(){
 
-            while(true){
+            while(socket.isConnected()){
                 try {
 
                     BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
