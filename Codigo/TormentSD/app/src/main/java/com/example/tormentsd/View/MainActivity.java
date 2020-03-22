@@ -1,17 +1,20 @@
 package com.example.tormentsd.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -49,7 +52,7 @@ import static com.example.tormentsd.Models.Global.Download.downloads;
 
 import static android.view.View.GONE;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, Comunicador {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, Comunicador{
     private EditText editTextPesquisa;
     private ConexaoServer conexaoServer;
     private CardView layoutLista;
@@ -109,11 +112,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Inicia a classe Download que possui um atributo estático
         new Download();
 
-        // Adiciona o caminho de todos os arquivos ao atributo estático da classe Download
-        pegaTodosOsArquivos();
-
         // Pede permissão ao usuário
         checaPermissao();
+
+        // Adiciona o caminho de todos os arquivos ao atributo estático da classe Download
+      //  pegaTodosOsArquivos();
+
 
         // faz a conexão com o servidor
         conexaoServer = new ConexaoServer(MainActivity.this);
@@ -136,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtDownload = findViewById(R.id.txtTituloDownload);
 
         atualizaListaDeArquivos();
-
 
         listviewDeDownloads.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -333,6 +336,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1000);
         }
+        else{
+            criaDiretorioTorment();
+        }
     }
 
     public void criaDiretorioTorment() {
@@ -341,6 +347,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (!folder.exists())
             folder.mkdir();
+        else{
+            // Adiciona o caminho de todos os arquivos ao atributo estático da classe Download
+            pegaTodosOsArquivos();
+        }
     }
 
     public void pesquisarArquivo(String arquivo) {
@@ -533,8 +543,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroy(){
+        System.out.println("Bye");
+        conexaoServer.enviarMensagem("desconectar");
 
         try {
 
@@ -542,5 +553,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 c.getSocket().close();
 
         } catch (IOException e) {e.printStackTrace();}
+        super.onDestroy();
     }
 }

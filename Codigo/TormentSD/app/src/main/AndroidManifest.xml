@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.tormentsd">
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.STORAGE" />
@@ -13,7 +13,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <service
+            android:name="com.example.tormentsd.Service.ServiceStop"
+            android:stopWithTask="false" />
         <activity android:name=".View.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".View.MainActivity"/>
+
+        <service android:name=".View.MainActivity" />
     </application>
 
 </manifest>

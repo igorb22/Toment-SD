@@ -25,20 +25,28 @@ public class Server extends Thread{
 		} catch (IOException e) {e.printStackTrace();}
 	 }
 	
-	 @Override
+	 @SuppressWarnings("deprecation")
+	@Override
 	 public void run() {
 	       super.run();
 	        
 	       System.out.println("Aguardando cliente...");
 
 	       new VerificaSolicitacoes().start();
-	       new VerificaSolicitacoes().start();
-	        
+	    //   new VerificaSolicitacoes().start(); 
 	       while(true) {
 		       try {	
 
+		    	   for(ProcessoExclusivo p: tormentsConectados) {
+						if ((!p.getConnection().isConnected() || p.getConnection() == null || p.getConnection().isClosed())) {
+							tormentsConectados.remove(p);
+							p.stop();
+						}
+						
+					}
+		    	   
 		    	   Socket connectionSocket = welcomeSocket.accept();
-			         
+			       
 			         
 			       tormentsConectados.add(new ProcessoExclusivo(connectionSocket));
 			       tormentsConectados.get(tormentsConectados.size()-1).start();
@@ -75,7 +83,7 @@ public class Server extends Thread{
 							new InputStreamReader(connection.getInputStream()));
 				
 				String pesquisa = inFromClient.readLine();
-			    System.out.println("mensagem recebida: "+pesquisa);
+			  //  System.out.println("mensagem recebida: "+pesquisa);
 
 			    if(pesquisa != null) {
 				
@@ -99,6 +107,11 @@ public class Server extends Thread{
 						
 						case "conexao": 
 								break;
+						
+						case "desconectar":
+							tormentsConectados.remove(this);
+							this.stop();
+							break;
 					
 					}
 			    }
@@ -133,8 +146,16 @@ public class Server extends Thread{
 
 			 if (tormentsConectados.size() > 1) {
 				 for (ProcessoExclusivo p: tormentsConectados) {
-					 if (!p.getConnection().equals(connection))
+						System.out.println("disp: " + p.getConnection().getRemoteSocketAddress() + " is " + p.getConnection().isConnected());
+						
+					 if ((p.getConnection().isConnected() || p.getConnection() != null || !p.getConnection().isClosed())) 
+					//		tormentsConectados.remove(p);
+					 
+					 ///if (!p.getConnection().equals(connection))
+					// if()
 						 mensagem += ";"+p.getConnection().getRemoteSocketAddress();
+					 else
+						 tormentsConectados.remove(p);
 				 }
 			 } else
 				 mensagem += ";false";
@@ -219,8 +240,9 @@ public class Server extends Thread{
 				 pos = getSolicitacaoArquivo(pesquisa);
 				 
 				 for (ProcessoExclusivo p : tormentsConectados) {
-				
-					 if (!(p.getConnection().equals(connection)))
+					// ((!p.getConnection().isConnected() || p.getConnection() == null || p.getConnection().isClosed())) 
+					//		tormentsConectados.remove(p);
+					 if ((p.getConnection().isConnected()))
 						 addTormentRespondente(pos,p.getConnection(), false,false);
 				 
 				 }
@@ -353,13 +375,13 @@ public class Server extends Thread{
 				
 					for(ProcessoExclusivo p: tormentsConectados) {
 						
-						if ((p.getConnection() == null || p.getConnection().isClosed())) {
+						if ((!p.getConnection().isConnected() || p.getConnection() == null || p.getConnection().isClosed())) {
 							tormentsConectados.remove(p);
 							p.stop();
 						}
 						
 					}
-					
+					break;
 				}
 				
 		 }

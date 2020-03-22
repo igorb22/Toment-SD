@@ -1,5 +1,6 @@
 package com.example.tormentsd.Models.Conexao;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ public class RecebeConexao extends Thread {
     }
 
 
+    @SuppressLint("LongLogTag")
     @Override
     public void run(){
         try {
@@ -40,5 +42,15 @@ public class RecebeConexao extends Thread {
         } catch (IOException e) {e.printStackTrace();}
     }
 
+    public void desconectarParaReceberConexao(){
+        if(!server.isClosed()) {
+            try {
+              //  this.stop();
+                server.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
