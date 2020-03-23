@@ -41,10 +41,9 @@ public class ServiceStop extends Service {
         conexaoServer.enviarMensagem("desconectar;true");
 
         try {
-
             for (ConexaoTorment c : conexoes)
                 c.getSocket().close();
 
-        } catch (IOException e) {e.printStackTrace();}
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

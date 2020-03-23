@@ -548,11 +548,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         conexaoServer.enviarMensagem("desconectar;true");
 
         try {
-
             for (ConexaoTorment c : conexoes)
                 c.getSocket().close();
 
         } catch (IOException e) {e.printStackTrace();}
+
         super.onDestroy();
     }
 }

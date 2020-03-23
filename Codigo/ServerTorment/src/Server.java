@@ -269,7 +269,6 @@ public class Server extends Thread{
 		 public void verificaSolicitacaoCompleta() {
 			 
 			 SolicitacaoArquivo s = null;
-			 System.out.println("Solicitacoes :" + solicitacoes.size());
 
 			 for(int i = 0; i < solicitacoes.size();i++) {
 				 

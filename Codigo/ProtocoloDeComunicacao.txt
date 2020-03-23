@@ -13,6 +13,9 @@ conexao;falhou
 // torment para servidor - dispositivos "online"
 dispositivosConectados:dispositivos
 
+// toment para servidor - avisando ao servidor que a aplicacao foi finalizada
+desconectar;true
+
 // servidor para torment - requisicao de pesquisa 
 pesquisa;"item"
 
